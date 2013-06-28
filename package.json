@@ -1,0 +1,47 @@
+{
+  "name": "geotwitter",
+  "version": "0.0.1",
+  "description": "Experience twitter geocentrically.",
+  "keywords": [
+    "twitter",
+    "geolocated",
+    "longitude",
+    "latitude"
+  ],
+  "homepage": "https://github.com/chbrown/geotwitter",
+  "repository": "git://github.com/chbrown/geotwitter.git",
+  "author": "Christopher Brown <io@henrian.com> (http://henrian.com)",
+  "license": "MIT",
+  "dependencies": {
+    "amulet": "~0.3",
+    "async": "*",
+    "cookies": "git://github.com/chbrown/cookies.git",
+    "formidable": "*",
+    "http-enhanced": "~0.3",
+    "js-yaml": "*",
+    "moment": "git://github.com/timrwood/moment.git#develop",
+    "mongoose": "*",
+    "optimist": "*",
+    "regex-router": "*",
+    "socket.io": "*",
+    "sv": "*",
+    "underscore": "*",
+    "twilight": "*",
+    "winston": "~0.6"
+  },
+  "devDependencies": {
+    "grunt": "*",
+    "grunt-contrib-handlebars": "git://github.com/chbrown/grunt-contrib-handlebars.git",
+    "grunt-contrib-uglify": "*"
+  },
+  "staticPattern": "static/lib/{file}",
+  "staticDependencies": {
+    "backbone": "*",
+    "handlebars": "*",
+    "jquery": "*",
+    "misc-js": "git://github.com/chbrown/misc-js.git",
+    "jquery-tablesorter": "*",
+    "json2": "*",
+    "underscore": "*"
+  }
+}

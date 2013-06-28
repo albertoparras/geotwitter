@@ -1,7 +1,7 @@
 {
   "name": "geotwitter",
   "version": "0.0.1",
-  "description": "Experience twitter geocentrically.",
+  "description": "Experience twitter geocentrically",
   "keywords": [
     "twitter",
     "geolocated",
@@ -23,6 +23,7 @@
     "mongoose": "*",
     "optimist": "*",
     "regex-router": "*",
+    "request": "~2.21",
     "socket.io": "*",
     "sv": "*",
     "underscore": "*",

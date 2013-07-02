@@ -19,6 +19,7 @@
     "formidable": "*",
     "http-enhanced": "~0.3",
     "js-yaml": "*",
+    "mime": "*",
     "moment": "git://github.com/timrwood/moment.git#develop",
     "mongoose": "*",
     "optimist": "*",

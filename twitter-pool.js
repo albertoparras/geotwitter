@@ -10,6 +10,7 @@ var TwitterPool = module.exports = function() {
 
   this.accounts = [];
   this.responses = [];
+  // this.streams = [];
 };
 util.inherits(TwitterPool, events.EventEmitter);
 TwitterPool.prototype.getOAuth = function() {
@@ -34,6 +35,7 @@ TwitterPool.prototype.add = function(form, callback) {
   req.on('response', function(res) {
     if (res.statusCode == 200) {
       self.responses.push(res);
+      // self.streams.push(res);
 
       var tweet_stream = res.pipe(new tweet.JSONStoTweet())
       .on('data', function(tweet) {
@@ -68,7 +70,8 @@ TwitterPool.prototype.addPersistent = function(form, callback) {
 
 TwitterPool.prototype.removeAll = function() {
   this.responses.forEach(function(res) {
-    res.unpipe();
+    res.request.abort();
+    // res.unpipe();
   });
   this.responses = [];
 };

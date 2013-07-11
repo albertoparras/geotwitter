@@ -120,7 +120,7 @@ io.sockets.on('connection', function (socket) {
   }
 
   socket.on('filter', function (form) {
-    logger.info('removing all responses', form);
+    logger.info('removing all responses');
     twitter_pool.removeAll();
 
     // var form = {stall_warnings: true};

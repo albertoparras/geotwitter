@@ -125,7 +125,18 @@ Tweet.prototype.render = function(map) {
     title: this.text
   }).addTo(map);
   marker.on('click', this.view, this);
-  $('#tweet_stream').html(this.text);
+
+  var html = '';
+
+  var m = this.created_at.match(/(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})/);
+  // new Date(year, month, day [hour, minute, second, millisecond]);
+  if (m) {
+    var epoch = Date.UTC(m[1], m[2] - 1, m[3], m[4], m[5], m[6], 0);
+    var date = new Date(epoch);
+    html += '<b>' + date.toString().split(' ').slice(0, 5).join(' ') + '</b>';
+  }
+  html += '<p>' + this.text + '</p>';
+  $('#tweet_stream').html(html);
 };
 Tweet.prototype.view = function() {
   var self = this;
@@ -196,7 +207,10 @@ function connect_socketio() {
     var select_value = form.locations ? 'locations' : 'track';
     $('form.filter option[value="' + select_value + '"]').prop('selected', true);
     $('form.filter input').val(form[select_value]);
-    $('#status').html('Filter updated').fadeOut(3000);
+    var $status = $('#status').html('Filter updated').css({opacity: 1});
+    setTimeout(function() {
+      $status.animate({opacity: 0.01}, 1000);
+    }, 1000);
   });
 
   window.socket = socket;
@@ -311,6 +325,9 @@ $('form.geocoder').on('submit', function(ev) {
         }).join(',')
         var form = {locations: locations, stall_warnings: true};
         socket.emit('filter', form);
+
+        var leaflet_filter_bounds = new L.LatLngBounds([sw.lat(), sw.lng()], [ne.lat(), ne.lng()]);
+        map.fitBounds(leaflet_filter_bounds, {padding: L.Point(10, 10)});
 
         message += 'Using location: ' + result.formatted_address;
       }

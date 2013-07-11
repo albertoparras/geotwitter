@@ -55,7 +55,7 @@ TwitterPool.prototype.addPersistent = function(form, callback) {
   var self = this;
   this.add(form, function(err, res) {
     if (err) {
-      logger.error('TwitterPool.addPersistent failed, retrying in 2s.', err.toString());
+      logger.error('TwitterPool.addPersistent failed, retrying in 2s.', err);
       setTimeout(function() {
         self.addPersistent(form, callback);
       }, 2000);

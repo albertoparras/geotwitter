@@ -25,6 +25,16 @@
   <div id="status">status...</div>
 </div>
 
+<div class="control" style="width: 200px;">
+  <h3>Geocoder</h3>
+  <form class="geocoder">
+    <input type="text" />
+    <button type="submit">Look up</button>
+  </form>
+  <div id="geocoder_result"></div>
+</div>
+
+
 <div style="clear: both; padding: 10px;">
   <hr style="margin: 0" />
 </div>
@@ -58,6 +68,10 @@
 <!-- <script src="http://{{hostname}}:{{static_port}}/static/heatmap-leaflet.js"></script> -->
 <!-- <script src="http://{{hostname}}:{{static_port}}/static/webgl-heatmap.js"></script> -->
 <!-- <script src="http://{{hostname}}:{{static_port}}/static/webgl-heatmap-leaflet.js"></script> -->
+
+<!-- temporarily for geocoding -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCDYwRP0wOSFFgzJDr73JtketDW335C234&sensor=true"></script>
+
 <script>
 L.Icon.Default.imagePath = 'http://{{hostname}}:{{static_port}}/static/lib/img';
 var DEBUG = false;
@@ -185,6 +199,7 @@ function connect_socketio() {
     $('#status').html('Filter updated').fadeOut(3000);
   });
 
+  window.socket = socket;
 }
 
 function randomly_add_points() {
@@ -271,5 +286,44 @@ $(document).keyup(function(e) {
     $('#listening').trigger('click');
   }
 });
+
+var geocoder = new google.maps.Geocoder();
+$('form.geocoder').on('submit', function(ev) {
+  ev.preventDefault();
+  var query = $('form.geocoder input').val();
+  geocoder.geocode({address: query}, function(results, status) {
+    var message = '';
+    if (status == google.maps.GeocoderStatus.OK && results.length) {
+      var result = results[0];
+      // console.log('Search found', result);
+
+      // geometry will be a box, if it's given, otherwise just a point (for addresses)
+      if (result.geometry.bounds) {
+        // window.bounds = result.geometry.bounds;
+        // console.log('locations=' + locations);
+        // twitter wants: sw.lon,sw.lat,ne.lon,ne.lat
+        var bounds = result.geometry.bounds;
+        var ne = bounds.getNorthEast();
+        var sw = bounds.getSouthWest();
+
+        var locations = [sw.lng(), sw.lat(), ne.lng(), ne.lat()].map(function (degrees) {
+          return degrees.toFixed(3);
+        }).join(',')
+        var form = {locations: locations, stall_warnings: true};
+        socket.emit('filter', form);
+
+        message += 'Using location: ' + result.formatted_address;
+      }
+      else {
+        message += 'Cannot use single point as bounds: ' + result.geometry.location.toString();
+      }
+    }
+    else {
+      message += 'Geocoder failed. ' + status.toString();
+    }
+    $('#geocoder_result').html(message);
+  });
+});
+
 
 </script>

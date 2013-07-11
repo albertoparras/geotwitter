@@ -17,8 +17,7 @@ var TwitterPool = require('./twitter-pool');
 var argv = require('optimist').default({
   port: 3600,
   hostname: '127.0.0.1',
-  static_port: '3601',
-  socketio_port: '3600',
+  static_port: 3601,
   accounts: '~/.twitter',
 }).argv;
 
@@ -51,8 +50,7 @@ R.get(/^\/static\/(.+)/, function(m, req, res) {
 R.default = function(m, req, res) {
   var ctx = {
     hostname: argv.hostname,
-    static_port: argv.static_port,
-    socketio_port: argv.socketio_port,
+    static_port: argv.static_port
   };
   amulet.stream(['layout.mu', 'show.mu'], ctx).pipe(res);
 };
@@ -117,12 +115,13 @@ io.sockets.on('connection', function (socket) {
   }
 
   socket.on('filter', function (form) {
-    logger.info('filtering', form);
+    logger.info('removing all responses', form);
     twitter_pool.removeAll();
 
     // var form = {stall_warnings: true};
     // data.type should be either 'locations' or 'track'
     // form[data.type] = data.query;
+    logger.info('filtering', form);
     twitter_pool.addPersistent(form);
     io.sockets.emit('filter', form);
   });

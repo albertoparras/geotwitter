@@ -17,8 +17,9 @@ var TwitterPool = require('./twitter-pool');
 var argv = require('optimist').default({
   port: 3600,
   hostname: '127.0.0.1',
+  static_port: '3601',
+  socketio_port: '3600',
   accounts: '~/.twitter',
-  staticRoot: 'http://127.0.0.1:3601',
 }).argv;
 
 // minify: true,
@@ -48,7 +49,11 @@ R.get(/^\/static\/(.+)/, function(m, req, res) {
 });
 // and render basic static page
 R.default = function(m, req, res) {
-  var ctx = {staticRoot: argv.staticRoot};
+  var ctx = {
+    hostname: argv.hostname,
+    static_port: argv.static_port,
+    socketio_port: argv.socketio_port,
+  };
   amulet.stream(['layout.mu', 'show.mu'], ctx).pipe(res);
 };
 

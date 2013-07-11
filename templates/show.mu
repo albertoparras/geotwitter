@@ -50,16 +50,16 @@
 </div>
 
 
-<link href="{{staticRoot}}/static/lib/leaflet.css" rel="stylesheet" type="text/css" />
-<script src="{{staticRoot}}/static/lib/leaflet.js"></script>
-<script src="{{staticRoot}}/static/leaflet-debug.js"></script>
-<!-- <script src="{{staticRoot}}/static/QuadTree.js"></script> -->
-<!-- <script src="{{staticRoot}}/static/heatmap.js"></script> -->
-<!-- <script src="{{staticRoot}}/static/heatmap-leaflet.js"></script> -->
-<!-- <script src="{{staticRoot}}/static/webgl-heatmap.js"></script> -->
-<!-- <script src="{{staticRoot}}/static/webgl-heatmap-leaflet.js"></script> -->
+<link href="http://{{hostname}}:{{static_port}}/static/lib/leaflet.css" rel="stylesheet" type="text/css" />
+<script src="http://{{hostname}}:{{static_port}}/static/lib/leaflet.js"></script>
+<script src="http://{{hostname}}:{{static_port}}/static/leaflet-debug.js"></script>
+<!-- <script src="http://{{hostname}}:{{static_port}}/static/QuadTree.js"></script> -->
+<!-- <script src="http://{{hostname}}:{{static_port}}/static/heatmap.js"></script> -->
+<!-- <script src="http://{{hostname}}:{{static_port}}/static/heatmap-leaflet.js"></script> -->
+<!-- <script src="http://{{hostname}}:{{static_port}}/static/webgl-heatmap.js"></script> -->
+<!-- <script src="http://{{hostname}}:{{static_port}}/static/webgl-heatmap-leaflet.js"></script> -->
 <script>
-L.Icon.Default.imagePath = '{{staticRoot}}/static/lib/img';
+L.Icon.Default.imagePath = 'http://{{hostname}}:{{static_port}}/static/lib/img';
 var DEBUG = false;
 var COUNTS = {
   tweets: 0,
@@ -146,7 +146,7 @@ function onTweet(attributes) {
 }
 
 function connect_socketio() {
-  var socket = io.connect('http://localhost');
+  var socket = io.connect('http://{{hostname}}');
   socket.on('tweet', onTweet);
   $('#listening').on('click', function() {
     console.log('#listening click', this.checked);

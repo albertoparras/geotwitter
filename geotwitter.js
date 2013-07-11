@@ -18,13 +18,13 @@ var argv = require('optimist').default({
   port: 3600,
   hostname: '127.0.0.1',
   accounts: '~/.twitter',
+  staticRoot: 'http://127.0.0.1:3601',
 }).argv;
 
 // minify: true,
 amulet.set({root: path.join(__dirname, 'templates')});
 mime.default_type = 'text/plain';
 
-var staticRoot = 'http://127.0.0.1:3601';
 var static_buffers = [];
 
 // set up some local static file handling.
@@ -48,7 +48,7 @@ R.get(/^\/static\/(.+)/, function(m, req, res) {
 });
 // and render basic static page
 R.default = function(m, req, res) {
-  var ctx = {staticRoot: staticRoot};
+  var ctx = {staticRoot: argv.staticRoot};
   amulet.stream(['layout.mu', 'show.mu'], ctx).pipe(res);
 };
 

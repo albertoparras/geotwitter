@@ -113,7 +113,7 @@ io.sockets.on('connection', function (socket) {
   if (twitter_pool.responses.length === 0) {
     var form = {locations: BOUNDS.illinois, stall_warnings: true};
     logger.debug('Starting default filter.', form);
-    twitter_pool.addPersistent(form, ready);
+    twitter_pool.addPersistent(form, 0, ready);
   }
   else {
     ready();
@@ -127,7 +127,7 @@ io.sockets.on('connection', function (socket) {
     // data.type should be either 'locations' or 'track'
     // form[data.type] = data.query;
     logger.info('filtering', form);
-    twitter_pool.addPersistent(form);
+    twitter_pool.addPersistent(form, 0);
     io.sockets.emit('filter', form);
   });
 

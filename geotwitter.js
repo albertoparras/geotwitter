@@ -46,6 +46,12 @@ R.get(/^\/static\/(.+)/, function(m, req, res) {
     });
   }
 });
+R.get(/^\/kill/, function(m, req, res) {
+  logger.error('Killed via /kill');
+  res.end('dying');
+  process.exit(1);
+});
+
 // and render basic static page
 R.default = function(m, req, res) {
   var ctx = {
@@ -54,7 +60,6 @@ R.default = function(m, req, res) {
   };
   amulet.stream(['layout.mu', 'show.mu'], ctx).pipe(res);
 };
-
 
 
 // quickstart the simple server

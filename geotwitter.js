@@ -1,24 +1,27 @@
 #!/usr/bin/env node
 'use strict'; /*jslint node: true, es5: true, indent: 2 */
 var amulet = require('amulet');
-var Cookies = require('cookies');
-var events = require('events');
 var fs = require('fs');
 var http = require('http-enhanced');
-// var https = require('https');
 var logger = require('winston');
 var mime = require('mime');
 var path = require('path');
-var request = require('request');
-var Router = require('regex-router');
-var socketio = require('socket.io');
 var sv = require('sv');
-var tweet = require('twilight/tweet');
+var socketio = require('socket.io');
 var util = require('util');
 
-var argv = require('optimist').default({port: 3600, hostname: '127.0.0.1'}).argv;
+var Cookies = require('cookies');
+var Router = require('regex-router');
+var TwitterPool = require('./twitter-pool');
 
-amulet.set({minify: true, root: path.join(__dirname, 'templates')});
+var argv = require('optimist').default({
+  port: 3600,
+  hostname: '127.0.0.1',
+  accounts: '~/.twitter',
+}).argv;
+
+// minify: true,
+amulet.set({root: path.join(__dirname, 'templates')});
 mime.default_type = 'text/plain';
 
 var staticRoot = 'http://127.0.0.1:3601';
@@ -65,87 +68,20 @@ var server = http.createServer(function(req, res) {
 });
 
 
-
 // this is the bit that pulls in Twitter
-var TwitterPipe = function() {
-  events.EventEmitter.call(this);
-
-  this.accounts = [];
-  this.responses = [];
-};
-util.inherits(TwitterPipe, events.EventEmitter);
-TwitterPipe.prototype.readAccounts = function(callback) {
-  var self = this;
-  // load account data from the local file called ~/.twitter
-  sv.Parser.readToEnd('~/.twitter', {encoding: 'utf8'}, function(err, accounts) {
-    self.accounts = accounts;
-    callback(err, accounts);
-  });
-};
-TwitterPipe.prototype.getOAuth = function() {
-  // just pick out a random account
-  var account = this.accounts[Math.random() * this.accounts.length | 0];
-  return {
-    consumer_key: account.consumer_key,
-    consumer_secret: account.consumer_secret,
-    token: account.access_token,
-    token_secret: account.access_token_secret,
-  };
-};
-
-TwitterPipe.prototype.add = function(form, callback) {
-  // callback signature: function(err, response)
-  // response also added to this.responses if it succeeds
-  var self = this;
-  var url = 'https://stream.twitter.com/1.1/statuses/filter.json';
-  var req = request.post(url, {form: form, oauth: this.getOAuth()});
-
-  req.on('response', function(res) {
-    if (res.statusCode == 200) {
-      self.responses.push(res);
-
-      var tweet_stream = res.pipe(new tweet.JSONStoTweet())
-      .on('data', function(tweet) {
-        self.emit('data', tweet);
-      })
-      .on('error', function(err) {
-        logger.error(err);
-      });
-
-      callback(null, res);
-    }
-    else {
-      callback(res);
-    }
-  });
-};
-var twitter_pipe = new TwitterPipe();
-twitter_pipe.readAccounts(function(err, accounts) {
+var twitter_pool = new TwitterPool();
+sv.Parser.readToEnd(argv.accounts, {encoding: 'utf8'}, function(err, accounts) {
   if (err) throw err;
-  else logger.info('Read ' + accounts.length + ' accounts');
+  twitter_pool.accounts = accounts;
+  logger.info('Read ' + accounts.length + ' accounts');
 });
 
-function add_default_filter(callback) {
-  // var form = {locations: '-180,-90,180,90', stall_warnings: true}; // Global
-  var form = {locations: '-126.3867,24.7668,-65.8301,49.4967', stall_warnings: true}; // USA
-  // var form = {locations: '-91.5131,36.9703,-87.4952,42.5083', stall_warnings: true}; // IL
-
-  logger.debug('Starting default filter.', form);
-  twitter_pipe.add(form, function(err, res) {
-    if (err) {
-      logger.error('TwitterPipe add failed, retrying in 2s.');
-      setTimeout(function() {
-        add_default_filter(callback);
-      }, 2000);
-    }
-    else {
-      if (callback) {
-        callback(err, res);
-      }
-    }
-  });
-}
-
+var BOUNDS = {
+  // sw.lon,sw.lat,ne.lon,ne.lat
+  global: '-180,-90,180,90',
+  usa: '-126.3867,24.7668,-65.8301,49.4967',
+  illinois: '-91.5131,36.9703,-87.4952,42.5083'
+};
 
 // mostly pull things from the twitter pipe and push them over into all sockets
 var io = socketio.listen(server);
@@ -156,12 +92,35 @@ io.sockets.on('connection', function (socket) {
 
   socket.emit('greeting', {text: 'Hello.', connected: Object.keys(io.connected).length});
 
-  logger.info('twitter_pipe.responses', {responses: twitter_pipe.responses.length});
+
+  logger.info('twitter_pool.responses', {responses: twitter_pool.responses.length});
+
+  function ready() {
+    var current_req = twitter_pool.responses[0].request;
+    logger.info('current request', current_req.form);
+    socket.emit('filter', current_req.form);
+  }
 
   // if anybody is listening and we aren't already streaming tweets, start a default one
-  if (twitter_pipe.responses.length === 0) {
-    add_default_filter();
+  if (twitter_pool.responses.length === 0) {
+    var form = {locations: BOUNDS.illinois, stall_warnings: true};
+    logger.debug('Starting default filter.', form);
+    twitter_pool.addPersistent(form, ready);
   }
+  else {
+    ready();
+  }
+
+  socket.on('filter', function (form) {
+    logger.info('filtering', form);
+    twitter_pool.removeAll();
+
+    // var form = {stall_warnings: true};
+    // data.type should be either 'locations' or 'track'
+    // form[data.type] = data.query;
+    twitter_pool.addPersistent(form);
+    io.sockets.emit('filter', form);
+  });
 
   socket.on('chat', function (data) {
     logger.info('Socket emitted "chat" message:', data);
@@ -171,7 +130,6 @@ io.sockets.on('connection', function (socket) {
   });
 });
 
-twitter_pipe.on('data', function(data) {
-  // console.log('Emitting');
+twitter_pool.on('data', function(data) {
   io.sockets.emit('tweet', data);
 });

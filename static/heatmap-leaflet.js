@@ -23,6 +23,26 @@ Rectangle: {
 
 */
 
+function Wied_heatmap() {
+  var heatmap_config = {
+    radius: 1000, // why!
+    // element: 'heatmapEl',
+    // visible: true,
+    opacity: 80, // percent
+    debug: true,
+    gradient: {
+      0.45: 'rgb(0,0,255)',
+      0.55: 'rgb(0,255,255)',
+      0.65: 'rgb(0,255,0)',
+      0.95: 'yellow',
+      1.0: 'rgb(255,0,0)'
+    }
+  };
+  // return heatmapFactory.create
+  var heatmap = heatmapFactory.create(heatmap_config);
+  return new L.TileLayer.HeatMap(heatmap_config);
+}
+
 /** QuadTree wants a rectangle, not a L.LatLngBounds class. */
 L.LatLngBounds.prototype.toRectangle = function() {
   return {

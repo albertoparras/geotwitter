@@ -48,27 +48,27 @@ TwitterPool.prototype.add = function(form, callback) {
       callback(null, res);
     }
     else {
-      callback(res);
+      callback(res.statusCode, res);
     }
   });
 };
 
 TwitterPool.prototype.addPersistent = function(form, attempt, callback) {
+  if (callback === undefined) callback = function() {};
   var self = this;
   this.add(form, function(err, res) {
-    if (err) {
-      logger.error('TwitterPool.addPersistent failed, retrying in 2s. ' + err.toString());
-      if (attempt < 5) {
-        setTimeout(function() {
-          self.addPersistent(form, attempt + 1, callback);
-        }, 2000);
-      }
-      else if (callback) {
-        logger.error('TwitterPool.addPersistent giving up.');
-        callback(new Error('TwitterPool.addPersistent failed too many times'));
-      }
+    if (err && attempt < 5) {
+      logger.error('TwitterPool.addPersistent failed, retrying in 2s. #' + attempt, {error: err});
+      setTimeout(function() {
+        self.addPersistent(form, attempt + 1, callback);
+      }, 2000);
     }
-    else if (callback) {
+    else if (err) {
+      var message = 'TwitterPool.addPersistent failed too many times';
+      logger.error(message);
+      callback(new Error(message));
+    }
+    else {
       callback(null, res);
     }
   });
@@ -77,7 +77,6 @@ TwitterPool.prototype.addPersistent = function(form, attempt, callback) {
 TwitterPool.prototype.removeAll = function() {
   this.responses.forEach(function(res) {
     res.request.abort();
-    // res.unpipe();
   });
   this.responses = [];
 };

@@ -33,3 +33,7 @@ Heatmaps
 Websockets
 
 * http://socket.io/
+
+## Related work
+
+http://www.geochirp.com/

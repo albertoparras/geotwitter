@@ -70,7 +70,7 @@
 <!-- <script src="http://{{hostname}}:{{static_port}}/static/webgl-heatmap-leaflet.js"></script> -->
 
 <!-- temporarily for geocoding -->
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCDYwRP0wOSFFgzJDr73JtketDW335C234&sensor=true"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCY5L1jgFP2dMeWEAlsw_t29TRgy7adDLc&sensor=true"></script>
 
 <script>
 L.Icon.Default.imagePath = 'http://{{hostname}}:{{static_port}}/static/lib/img';

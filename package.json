@@ -19,6 +19,7 @@
     "formidable": "*",
     "http-enhanced": "~0.3",
     "js-yaml": "*",
+    "loge": "*",
     "mime": "*",
     "moment": "git://github.com/timrwood/moment.git#develop",
     "mongoose": "*",
@@ -28,8 +29,7 @@
     "socket.io": "*",
     "sv": "*",
     "underscore": "*",
-    "twilight": "*",
-    "winston": "~0.6"
+    "twilight": "*"
   },
   "devDependencies": {
     "grunt": "*",

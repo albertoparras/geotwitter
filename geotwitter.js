@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-'use strict'; /*jslint node: true, es5: true, indent: 2 */
+/*jslint node: true */
 var amulet = require('amulet');
 var fs = require('fs');
 var http = require('http-enhanced');
-var logger = require('winston');
+var logger = require('loge');
 var mime = require('mime');
 var path = require('path');
 var sv = require('sv');

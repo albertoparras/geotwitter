@@ -1,6 +1,6 @@
-'use strict'; /*jslint node: true, es5: true, indent: 2 */
+/*jslint node: true */
 var events = require('events');
-var logger = require('winston');
+var logger = require('loge');
 var request = require('request');
 var util = require('util');
 var tweet = require('twilight/tweet');
